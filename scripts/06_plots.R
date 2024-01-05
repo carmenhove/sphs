@@ -14,8 +14,8 @@ fig1b <- get.plot(fig1_df2, fig1_df2$ifm24hr_atnbf_pct) +
   scale_fill_manual(values = c("#3B7D6E", "#5792CC", "#4D5B75")) +
   scale_color_manual(values = c("#3B7D6E", "#5792CC", "#4D5B75")) +
   labs(x = "% ATN Breastfeeding (24 hrs)",
-       y = "Evening-to-Morning \n Delta Secretion Rate",
-       caption = str_wrap("Fig 1. Predicted evening-to-morning change in CRP, IL-8, IL-6, IL-1ß, and TNF-α secretion rates by % ATN breastfeeding. Solid lines = point estimates for predicted median value. Shaded regions = 95% credible intervals. Dotted lines = zero difference between evening and morning secretion rate. Values above the horizontal dotted line = secretion rate is higher in the morning. Values below the horizontal dotted line = secretion rate is higher in the evening.",145)) 
+       y = "Evening-to-Morning \n Delta Secretion Rate")#,
+#       caption = str_wrap("Fig 1. Predicted evening-to-morning change in CRP, IL-8, IL-6, IL-1ß, and TNF-α secretion rates by % ATN breastfeeding. Solid lines = point estimates for predicted median value. Shaded regions = 95% credible intervals. Dotted lines = zero difference between evening and morning secretion rate. Values above the horizontal dotted line = secretion rate is higher in the morning. Values below the horizontal dotted line = secretion rate is higher in the evening.",145)) 
   
 figure_1 <- plot_grid(fig1a, fig1b, ncol=1, rel_heights=c(1,0.75))
 
@@ -38,8 +38,8 @@ figure_2 <- ggplot(tsdpred_df %>% filter(measure == "IL-8")) +
         plot.title.position = "plot", 
         plot.caption.position =  "plot") + 
   labs(x = "% ATN Breastfeeding (24 hrs)",
-       y = "Evening-to-morning \n Delta Secretion Rate", 
-       caption = str_wrap("Fig 2. Predicted median evening-to-morning change in IL-8 by % ATN breastfeeding and time since delivery. Solid lines = point estimates for predicted median value. Shaded regions = 95% credible intervals. Dotted lines = zero difference between evening and morning secretion rate. Values above the horizontal dotted line = secretion rate is higher in the morning. Values below the horizontal dotted line = secretion rate is higher in the evening.",145))
+       y = "Evening-to-morning \n Delta Secretion Rate")#, 
+#       caption = str_wrap("Fig 2. Predicted median evening-to-morning change in IL-8 by % ATN breastfeeding and time since delivery. Solid lines = point estimates for predicted median value. Shaded regions = 95% credible intervals. Dotted lines = zero difference between evening and morning secretion rate. Values above the horizontal dotted line = secretion rate is higher in the morning. Values below the horizontal dotted line = secretion rate is higher in the evening.",145))
 
 ggsave("./output/figure_2.png",figure_2, 
        device = ragg::agg_png,dpi = 600,
@@ -60,8 +60,8 @@ figure_3 <- ggplot(pumppred_df %>% filter(measure == "CRP")) +
         plot.title.position = "plot", 
         plot.caption.position =  "plot") + 
   labs(x = "% ATN Breastfeeding (24 hrs)",
-       y = "Evening-to-morning \n Delta Secretion Rate",
-       caption = str_wrap("Fig 3. Predicted median evening-to-morning change in CRP by % ATN breastfeeding at 0%, 50% and 100% pumping. Solid lines = point estimates for predicted median value. Shaded regions = 95% credible intervals. Dotted lines = zero difference between evening and morning secretion rate. Values above the horizontal dotted line = secretion rate is higher in the morning. Values below the horizontal dotted line = secretion rate is higher in the evening.",145))
+       y = "Evening-to-morning \n Delta Secretion Rate")#,
+#       caption = str_wrap("Fig 3. Predicted median evening-to-morning change in CRP by % ATN breastfeeding at 0%, 50% and 100% pumping. Solid lines = point estimates for predicted median value. Shaded regions = 95% credible intervals. Dotted lines = zero difference between evening and morning secretion rate. Values above the horizontal dotted line = secretion rate is higher in the morning. Values below the horizontal dotted line = secretion rate is higher in the evening.",145))
 
 ggsave("./output/figure_3.png",figure_3, 
        device = ragg::agg_png,dpi = 600,

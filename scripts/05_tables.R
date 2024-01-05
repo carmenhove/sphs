@@ -5,9 +5,9 @@
 
 ## Create look-up table
 rename_tbl <- c(
-  phq_cold = "Minor Cold", 
-  phq_gastro = "Gastro",
-  phq_respiratory = "Severe Respiratory", 
+  phq_cold = "Maternal Minor Cold", 
+  phq_gastro = "Maternal Gastrointestinal Illness",
+  phq_respiratory = "Maternal Severe Respiratory Illness", 
   la_yn = "Lactational Amenorrhea",
   csec_yn = "C-section", 
   birthcomps_yn = "Birth Complication(s)",
@@ -46,12 +46,18 @@ tbl_2 <- comb_df %>%
   filter(measure == "crp") %>%
   select(age, tsd, ifm24hr_total, date_time_diff_hrs, ifm24hr_atnbf_pct,
          ifm24hr_allpump_pct, ppbmi, cbmi, parity) %>%
-  summarise(across(everything(), get.meanmed.range)) %>%
-  pivot_longer(everything(), 
-               names_to = "Variable", 
-               values_to = "Median / Mean and Range") 
+  summarise(across(everything(), 
+                   list(Median = median, IQR = IQR, 
+                        Mean = mean, `Standard Deviation` = sd, Min = min, Max = max), na.rm = TRUE)) %>% 
+  #summarise(across(everything(), get.meanmed.range)) %>%
+  pivot_longer(everything(), names_to = "Statistic", values_to = "Value") %>% 
+  mutate(Value = round(Value, digits = 2)) %>% 
+  separate(Statistic, c("Variable","Statistic"), sep = "\\_(?=[^_]+$)") %>% 
+  pivot_wider(names_from = Statistic, values_from = Value) 
 
 tbl_2$Variable <- unname(rename_tbl[tbl_2$Variable])
+
+#   <!-- 5. In table 3, many of the variables require further definition. For example, what does 'gastro' mean?   Is this table referring to incidence rate in the lactating parent or infant?  Use complete terminology, not jargon. Use footnotes to explain brief terms, such as using footnotes to list the birth complications included in the incidence rate. -->
 
 ## Table S4
 tbl_3 <- survey_clean %>%
@@ -114,8 +120,21 @@ tbl_5 <- unique(
 
 # SUPPLEMENTAL TABLES
 
+# <!-- 8. Report more details on the cytokine and CRP assays. What was the limit of detection for these assays? How often did values exceed the range of the standard curve for each assay, and how were these data handled? -->
+
 ## Table S1
-tbl_s1 <- as_tibble(data.frame(Measure = c("CRP","IL-6","IL-1ß","IL-8","TNF-α"),
+
+# Samples were assayed for the Salimetrics Cytokine Panel (IL-1β, IL-6, TNF-α, and IL-8) in duplicate at the Salimetrics SalivaLab (Carlsbad, CA) using a proprietary electrochemiluminesence method developed and validated for saliva by Salimetrics. The average coefficient of variation for all samples tested was <15%, which meets the SalivaLab’s criteria for accuracy and repeatability in Salivary Bioscience, and exceeds the applicable NIH guidelines for Enhancing Reproducibility through Rigor and Transparency.
+
+tbl_s1 <- as_tibble(data.frame(Measure = c("CRP",
+                                           "IL-6","IL-1ß",
+                                           "IL-8","TNF-α"),
+                               Sensitivity = c("0.042 pg/mL", 
+                                               "0.0491 pg/mL", "0.0195 pg/mL",
+                                               "0.0201 pg/mL", "0.0314 pg/mL"),
+                               Range = c("25-1600 pg/mL", 
+                                         "0.0491-736 pg/mL", "0.0195-589 pg/mL",
+                                         "0.0201-574 pg/mL", "0.0314-380 pg/mL"),
                                CV = c("2.61%","5.00%","2.51%","3.80%","6.46%"))) %>%
   rename(`Coefficient of Variability` = CV)
 
@@ -152,7 +171,24 @@ tbl_s6 <- get.breakdown(survey_clean, "employ") %>%
   rename(`Employment Status` = employ)
 
 ## Table S7
-tbl_s7 <- survey_clean %>%
+tbl_s7 <- comb_df %>%
+  group_by(measure) %>% 
+  summarise(across(`1`:`2`, list(Median = median,  IQR = IQR, 
+                                 Mean = mean, `Standard Deviation` = sd,
+                                 Min = min, Max = max), na.rm = T)) %>% 
+  pivot_longer(`1_Median`:`2_Max`, values_to = "Value", names_to = "Statistic") %>%
+  separate(Statistic, c("Sample", "Statistic"), sep = "\\_(?=[^_]+$)") %>% 
+  mutate(Value = round(Value, digits = 2)) %>% 
+  pivot_wider(names_from = Statistic, values_from = Value) %>% 
+  mutate(Measure = case_when(measure == "crp" ~ "CRP",
+                             measure == "il1b" ~ "IL-1ß",
+                             measure == "il6" ~ "IL-6",
+                             measure == "il8" ~ "IL-8",
+                             measure == "tnfa" ~ "TNF-α")) %>% 
+  select(Measure, Sample:Max)
+
+## Table S8
+tbl_s8 <- survey_clean %>%
   mutate(mixed_24hr = case_when(ifm24hr_atnbf > 0 & 
                                   (ifm24hr_liquids > 0 | 
                                      ifm24hr_solids > 0 | 
@@ -206,13 +242,13 @@ tbl_s7 <- survey_clean %>%
   arrange(Yes) %>%
   select(Covariate, Yes, No, Incidence)
 
-tbl_s7$Covariate <- unname(rename_tbl[tbl_s7$Covariate])
+tbl_s8$Covariate <- unname(rename_tbl[tbl_s8$Covariate])
 
 #Table S8
 fits_list <- map(mod_list, get.fits)
 names(fits_list) <- names(mod_list)
 
-tbl_s8 <- bind_rows(fits_list, .id = "measure") %>%
+tbl_s9 <- bind_rows(fits_list, .id = "measure") %>%
   arrange(parameter, measure) %>%
   filter(parameter %in% c("tsd","ifm24hr_allpump_pct", "ifm24hr_atnbf_pct")) %>%
   select(-sig) %>%

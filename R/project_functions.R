@@ -150,9 +150,9 @@ get.fits <- function(x){
            unit = case_when(grepl("_pct",parameter) ~ "pg/ml/min/%",
                             parameter == "tsd" ~ "pg/ml/min/day",
                             TRUE ~ ""),
-           param_adj = str_c("ß = ", round(Estimate, digits = 2), " ", unit, 
-                             "; 95% CI = ", round(Q5, digits = 2), ", ", 
-                             round(Q95, digits = 2)),
+           param_adj = str_c("ß = ", format(round(Estimate, digits = 2),2), " ", unit, 
+                             "; 95% CI = ", format(round(Q5, digits = 2),2), ", ", 
+                             format(round(Q95, digits = 2),2)),
            sig = case_when(Q5 > 0 & Q95 > 0 ~ "Positive",
                            Q5 < 0 & Q95 < 0 ~ "Negative",
                            TRUE ~ "Non-Robust")) %>%

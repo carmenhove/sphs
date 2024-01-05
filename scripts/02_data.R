@@ -1,6 +1,9 @@
 #IMPORT DATA
 
-bio_df <- read.csv("./data/biomarker_data.csv") %>% select(-X)
+bio_df <- read.csv("./data/biomarker_data.csv") %>% 
+  select(-X) 
+# %>% 
+#   filter((measure == "crp" & value <= 1600 & value >= 25) | measure != "crp")
 
 survey_df <- read.csv("./data/survey_data.csv") %>% select(-X) %>%
   mutate(cosleep24hr_yn = case_when(grepl("My baby slept in bed with me", cosleep24hr) ~ 1,
@@ -35,7 +38,7 @@ survey_df <- read.csv("./data/survey_data.csv") %>% select(-X) %>%
 comb_df <- bio_df %>%
   select(pid, measure, sample, secretion_rate, unit, date_time_diff_hrs) %>%
   pivot_wider(values_from = secretion_rate, names_from = sample) %>%
-  mutate(delta_value = `2` - `1`) %>%
+  mutate(delta_value = `2` - `1`) %>% #Morning - evening
   full_join(., survey_df) %>%
   mutate(saliva_yn = case_when(is.na(delta_value) ~ "No", TRUE ~ "Yes")) %>%
   filter(saliva_yn == "Yes", measure %in% c("crp","il6","il8","il1b","tnfa"))
