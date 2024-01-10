@@ -43,7 +43,7 @@ str(tbl_1)
 ## Table 2
 tbl_2 <- comb_df %>%
   #limit to CRP, since this is what we did to standardize model predicted values
-  filter(measure == "crp") %>%
+  #filter(measure == "crp") %>%
   select(age, tsd, ifm24hr_total, date_time_diff_hrs, ifm24hr_atnbf_pct,
          ifm24hr_allpump_pct, ppbmi, cbmi, parity) %>%
   summarise(across(everything(), 
@@ -171,24 +171,7 @@ tbl_s6 <- get.breakdown(survey_clean, "employ") %>%
   rename(`Employment Status` = employ)
 
 ## Table S7
-tbl_s7 <- comb_df %>%
-  group_by(measure) %>% 
-  summarise(across(`1`:`2`, list(Median = median,  IQR = IQR, 
-                                 Mean = mean, `Standard Deviation` = sd,
-                                 Min = min, Max = max), na.rm = T)) %>% 
-  pivot_longer(`1_Median`:`2_Max`, values_to = "Value", names_to = "Statistic") %>%
-  separate(Statistic, c("Sample", "Statistic"), sep = "\\_(?=[^_]+$)") %>% 
-  mutate(Value = round(Value, digits = 2)) %>% 
-  pivot_wider(names_from = Statistic, values_from = Value) %>% 
-  mutate(Measure = case_when(measure == "crp" ~ "CRP",
-                             measure == "il1b" ~ "IL-1ß",
-                             measure == "il6" ~ "IL-6",
-                             measure == "il8" ~ "IL-8",
-                             measure == "tnfa" ~ "TNF-α")) %>% 
-  select(Measure, Sample:Max)
-
-## Table S8
-tbl_s8 <- survey_clean %>%
+tbl_s7 <- survey_clean %>%
   mutate(mixed_24hr = case_when(ifm24hr_atnbf > 0 & 
                                   (ifm24hr_liquids > 0 | 
                                      ifm24hr_solids > 0 | 
@@ -242,7 +225,26 @@ tbl_s8 <- survey_clean %>%
   arrange(Yes) %>%
   select(Covariate, Yes, No, Incidence)
 
-tbl_s8$Covariate <- unname(rename_tbl[tbl_s8$Covariate])
+tbl_s7$Covariate <- unname(rename_tbl[tbl_s7$Covariate])
+
+## Table S8
+tbl_s8 <- comb_df %>%
+  group_by(measure) %>% 
+  summarise(across(`1`:`2`, list(Median = median,  IQR = IQR, 
+                                 Mean = mean, `Standard Deviation` = sd,
+                                 Min = min, Max = max), na.rm = T)) %>% 
+  pivot_longer(`1_Median`:`2_Max`, values_to = "Value", names_to = "Statistic") %>%
+  separate(Statistic, c("Sample", "Statistic"), sep = "\\_(?=[^_]+$)") %>% 
+  mutate(Value = round(Value, digits = 2)) %>% 
+  pivot_wider(names_from = Statistic, values_from = Value) %>% 
+  mutate(Measure = case_when(measure == "crp" ~ "CRP",
+                             measure == "il1b" ~ "IL-1ß",
+                             measure == "il6" ~ "IL-6",
+                             measure == "il8" ~ "IL-8",
+                             measure == "tnfa" ~ "TNF-α")) %>% 
+  select(Measure, Sample:Max) %>% 
+  mutate(Unit = "pg/mL/min") %>% 
+  select(Measure, Sample, Unit, Median:Max)
 
 #Table S8
 fits_list <- map(mod_list, get.fits)
